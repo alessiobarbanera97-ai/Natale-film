@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Movie Night 🎄✨</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome per Icone Natalizie e Fiocchi di Neve -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Playfair Display + Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+    <!-- JS Confetti per l'animazione Esplosione Regalo -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        xmasRed: '#C41E3A',
+                        xmasDarkRed: '#8B0000',
+                        xmasGreen: '#165B33',
+                        xmasDarkGreen: '#0B3B24',
+                        xmasGold: '#FFD700',
+                        xmasCream: '#FFF8DC',
+                        xmasIce: '#E0F7FA'
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Font e stili personalizzati natalizi */
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #092c1b 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Effetto Neve sullo Sfondo */
+        #snow-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Animazione regalo che trema / si apre */
+        @keyframes giftShake {
+            0% { transform: rotate(0deg) scale(1); }
+            20% { transform: rotate(-5deg) scale(1.05); }
+            40% { transform: rotate(5deg) scale(1.1); }
+            60% { transform: rotate(-5deg) scale(1.1); }
+            80% { transform: rotate(5deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1.2); }
+        }
+
+        .animate-gift-open {
+            animation: giftShake 0.8s ease-in-out forwards;
+        }
+
+        /* Personaggio Grinch / Babbo Natale volante */
+        @keyframes floatAcross {
+            0% { transform: translateX(-120%) translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            50% { transform: translateX(50vw) translateY(-20px); }
+            90% { opacity: 1; }
+            100% { transform: translateX(120vw) translateY(0); opacity: 0; }
+        }
+
+        .easter-egg-float {
+            animation: floatAcross 12s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1329;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #165B33;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C41E3A;
+        }
+    </style>
+</head>
+<body class="relative pb-16">
+
+    <!-- Canvas per Neve Cadente -->
+    <canvas id="snow-canvas"></canvas>
+
+    <!-- Personaggio Easter Egg Volante (Grinch / Babbo Natale) -->
+    <div id="easter-egg-container" class="fixed top-12 left-0 z-50 pointer-events-none hidden">
+        <div id="easter-egg-content" class="flex items-center gap-2 bg-slate-900/90 text-white px-4 py-2 rounded-full border-2 border-xmasGold shadow-2xl">
+            <span id="easter-egg-icon" class="text-3xl">🎅</span>
+            <span id="easter-egg-msg" class="font-serif italic font-bold text-sm md:text-base">"Ho Ho Ho! È tempo di guardar un film!"</span>
+        </div>
+    </div>
+
+    <!-- HEADER / BARRA SUPERIORE -->
+    <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-white/10 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Titolo App -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-xmasRed to-xmasGold flex items-center justify-center text-white text-xl shadow-lg shadow-xmasRed/40">
+                    🎄
+                </div>
+                <div>
+                    <h1 class="font-serif text-2xl md:text-3xl font-extrabold tracking-wide bg-gradient-to-r from-red-400 via-amber-200 to-emerald-400 bg-clip-text text-transparent">
+                        Christmas Movie Night
+                    </h1>
+                    <p class="text-xs text-slate-400 font-light">Serata Film Magica per Alessio & Giada 🍿❄️</p>
+                </div>
+            </div>
+
+            <!-- Selezione Profilo Attivo -->
+            <div class="flex items-center gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-white/10 shadow-inner">
+                <span class="text-xs text-slate-400 pl-2 font-medium">Stai usando:</span>
+                <button id="btn-user-alessio" onclick="switchUser('Alessio')" class="px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 bg-xmasRed text-white shadow-md">
+                    👨‍🦱 Alessio
+                </button>
+                <button id="btn-user-giada" onclick="switchUser('Giada')" class="px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+                    👩‍🦰 Giada
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-6 space-y-8">
+
+        <!-- COUNTDOWN & CALENDARIO BANNER -->
+        <section class="glass-card rounded-3xl p-6 relative overflow-hidden border border-amber-500/30">
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl pointer-events-none select-none">
+                🎁
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                
+                <!-- Data Odierna -->
+                <div class="flex items-center gap-4 bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                    <div class="bg-xmasRed text-white text-center rounded-xl p-3 min-w-[70px] shadow-lg">
+                        <span id="cal-month" class="block text-xs uppercase font-extrabold tracking-wider">NOV</span>
+                        <span id="cal-day" class="block text-2xl font-black font-serif">01</span>
+                    </div>
+                    <div>
+                        <span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Calendario</span>
+                        <h2 id="cal-full-date" class="font-serif font-bold text-lg text-amber-200">Domenica, 1 Novembre</h2>
+                        <p class="text-xs text-emerald-400 flex items-center gap-1 mt-0.5">
+                            <i class="fa-solid fa-snowflake text-[10px]"></i> Aggiornato ad oggi
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Countdown Natale -->
+                <div class="text-center md:border-x md:border-white/10 md:px-4 py-2">
+                    <span class="text-xs uppercase tracking-widest text-amber-300/80 font-bold">Conteggio per la Vigilia</span>
+                    <div class="flex justify-center items-baseline gap-2 mt-1">
+                        <span id="days-to-xmas" class="font-serif text-5xl font-black text-white drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">54</span>
+                        <span class="text-xl font-serif text-amber-300 font-bold">giorni</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-1">mancano al giorno di Natale! 🎅🎁</p>
+                </div>
+
+                <!-- Stato Serata -->
+                <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5 flex flex-col justify-center">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-slate-400 font-medium">Sessione di coppia</span>
+                        <span class="text-xs bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Attiva</span>
+                    </div>
+                    <p class="text-sm text-slate-200">
+                        Entrambi dovete esprimere la vostra preferenza. Se entrambi cliccate <span class="text-emerald-400 font-bold">"Lo vediamo"</span>, la magia natalizia si sblocca!
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- NAVIGATION TABS -->
+        <div class="flex justify-center border-b border-white/10 pb-2">
+            <nav class="flex gap-2 p-1 bg-slate-900/80 rounded-2xl border border-white/10 overflow-x-auto max-w-full">
+                <button onclick="switchTab('proposte')" id="tab-proposte" class="tab-btn active-tab px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 bg-xmasGreen text-white shadow-lg">
+                    <i class="fa-solid fa-dice-five"></i> Proposte Stasera
+                </button>
+                <button onclick="switchTab('visti')" id="tab-visti" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-white/5">
+                    <i class="fa-solid fa-film"></i> Film Visti (<span id="count-watched">0</span>)
+                </button>
+                <button onclick="switchTab('libreria')" id="tab-libreria" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-white/5">
+                    <i class="fa-solid fa-folder-plus"></i> Libreria & Aggiungi
+                </button>
+                <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-white/5">
+                    <i class="fa-solid fa-chart-pie"></i> Analytics
+                </button>
+            </nav>
+        </div>
+
+        <!-- ================= SEZIONE 1: PROPOSTE STASERA (4 DECK CARD) ================= -->
+        <section id="section-proposte" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="font-serif text-2xl font-bold text-white flex items-center gap-2">
+                        <span>🎬</span> 4 Suggerimenti della Serata
+                    </h3>
+                    <p class="text-sm text-slate-400">Scelti casualmente per voi dalla vostra libreria natalizia.</p>
+                </div>
+                <button onclick="generateProposals()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-rotate text-xs"></i> Genera Altri 4 Film
+                </button>
+            </div>
+
+            <!-- Grid delle 4 Card -->
+            <div id="deck-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Verrà popolato dinamicamente via JS -->
+            </div>
+        </section>
+
+
+        <!-- ================= SEZIONE 2: FILM VISTI & VOTAZIONI ================= -->
+        <section id="section-visti" class="space-y-6 hidden">
+            <div>
+                <h3 class="font-serif text-2xl font-bold text-white flex items-center gap-2">
+                    <span>🏆</span> I Vostri Film Confermato & Visti
+                </h3>
+                <p class="text-sm text-slate-400">Qui trovate la cronologia delle vostre serate cinema con i voti a pupazzo di neve ☃️.</p>
+            </div>
+
+            <div id="watched-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Popolato via JS -->
+            </div>
+        </section>
+
+
+        <!-- ================= SEZIONE 3: LIBRERIA & AGGIUNGI FILM ================= -->
+        <section id="section-libreria" class="space-y-6 hidden">
+            
+            <!-- Form per aggiungere film -->
+            <div class="glass-card rounded-3xl p-6 border border-emerald-500/30">
+                <h4 class="font-serif text-xl font-bold text-emerald-300 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i> Aggiungi un nuovo Film o Serie TV
+                </h4>
+                <form id="add-movie-form" onsubmit="handleAddMovie(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Titolo</label>
+                        <input type="text" id="new-title" required placeholder="Es. Mamma Ho Perso L'Aereo" 
+                            class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Tipologia</label>
+                        <select id="new-type" class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                            <option value="Film">Film 🎬</option>
+                            <option value="Serie TV">Serie TV 📺</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Genere / Mood</label>
+                        <select id="new-genre" class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                            <option value="Classico Natalizio">Classico Natalizio 🎄</option>
+                            <option value="Commedia / Divertente">Commedia 🎅</option>
+                            <option value="Romantico Invernale">Romantico ✨</option>
+                            <option value="Avventura / Fantasia">Avventura ❄️</option>
+                            <option value="Animazione">Animazione ⛄</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-3 flex justify-end">
+                        <button type="submit" class="px-6 py-2.5 bg-xmasGreen hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2">
+                            <i class="fa-solid fa-check"></i> Salva in Libreria
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lista completa della Libreria -->
+            <div>
+                <h4 class="font-serif text-xl font-bold text-white mb-4">Tutti i film presenti nel catalogo (<span id="total-library-count">0</span>)</h4>
+                <div id="full-library-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Popolato via JS -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= SEZIONE 4: ANALYTICS & STATISTICHE ================= -->
+        <section id="section-analytics" class="space-y-6 hidden">
+            <div>
+                <h3 class="font-serif text-2xl font-bold text-white flex items-center gap-2">
+                    <span>📊</span> Analytics & Statistiche Proposte
+                </h3>
+                <p class="text-sm text-slate-400">Monitora quante volte ciascun film è stato proposto nel deck casuale e il livello di gradimento.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Statistiche veloci -->
+                <div class="glass-card rounded-2xl p-5 border border-white/10 text-center">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-bold">Totale in Libreria</span>
+                    <div id="stat-total-movies" class="text-4xl font-black font-serif text-amber-300 mt-2">0</div>
+                </div>
+                <div class="glass-card rounded-2xl p-5 border border-white/10 text-center">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-bold">Film Confermati & Visti</span>
+                    <div id="stat-watched-movies" class="text-4xl font-black font-serif text-emerald-400 mt-2">0</div>
+                </div>
+                <div class="glass-card rounded-2xl p-5 border border-white/10 text-center">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-bold">Più Proposto nel Deck</span>
+                    <div id="stat-top-proposed" class="text-lg font-bold font-serif text-xmasRed mt-2 truncate">-</div>
+                </div>
+            </div>
+
+            <!-- Tabella Frequenza Proposte -->
+            <div class="glass-card rounded-3xl p-6 border border-white/10 overflow-hidden">
+                <h4 class="font-serif text-lg font-bold text-slate-200 mb-4">Frequenza di Comparsa nelle Proposte</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-white/10">
+                            <tr>
+                                <th class="py-3 px-4">Titolo Film / Serie</th>
+                                <th class="py-3 px-4">Tipo</th>
+                                <th class="py-3 px-4 text-center">Volte Proposto</th>
+                                <th class="py-3 px-4 text-center">Stato</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-table-body" class="divide-y divide-white/5">
+                            <!-- Popolato via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALE ESPLOSIONE REGALO & CONFERMA -->
+    <div id="modal-match" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+        <div id="gift-box-modal" class="glass-card max-w-md w-full p-8 rounded-3xl text-center border-2 border-xmasGold relative shadow-2xl">
+            
+            <button onclick="closeMatchModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <!-- Icona Pacco Regalo Animata -->
+            <div id="gift-icon" class="text-7xl mb-4 cursor-pointer hover:scale-110 transition-transform">
+                🎁
+            </div>
+
+            <h3 class="font-serif text-3xl font-black text-amber-300 mb-2">È UN MATCH! 🎄✨</h3>
+            <p class="text-sm text-slate-200 mb-4">Sia <strong class="text-emerald-400">Alessio</strong> che <strong class="text-emerald-400">Giada</strong> hanno scelto questo film!</p>
+            
+            <div class="bg-slate-900/80 p-4 rounded-2xl border border-white/10 mb-6">
+                <span id="modal-movie-type" class="text-xs uppercase tracking-wider text-xmasGold font-bold">Film</span>
+                <h4 id="modal-movie-title" class="font-serif text-2xl font-bold text-white mt-1">Titolo del Film</h4>
+                <p id="modal-movie-genre" class="text-xs text-slate-400 mt-1">Genere</p>
+            </div>
+
+            <button id="btn-confirm-watch" onclick="confirmWatchedMovie()" class="w-full py-3.5 bg-gradient-to-r from-xmasRed to-amber-500 hover:from-red-600 hover:to-amber-600 text-white font-extrabold text-base rounded-2xl transition-all shadow-xl shadow-xmasRed/40 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-gift"></i> CONFERMA & GUARDA STASERA
+            </button>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // Immagini di Copertina Natalizie Casuali per le card
+        const HOLIDAY_POSTERS = [
+            'https://images.unsplash.com/photo-1543589077-47d51606c1bf?w=600&auto=format&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=600&auto=format&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=600&auto=format&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1576692139739-ab429e285078?w=600&auto=format&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1513297887119-d46091b24bfa?w=600&auto=format&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1511268559489-34b624fbfcf5?w=600&auto=format&fit=crop&q=80'
+        ];
+
+        // Database Iniziale precaricato
+        const DEFAULT_MOVIES = [
+            { id: '1', title: 'Mamma, Ho Perso l\'Aereo', type: 'Film', genre: 'Classico Natalizio', poster: HOLIDAY_POSTERS[0], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } },
+            { id: '2', title: 'Il Grinch (2000)', type: 'Film', genre: 'Commedia / Divertente', poster: HOLIDAY_POSTERS[1], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } },
+            { id: '3', title: 'Love Actually', type: 'Film', genre: 'Romantico Invernale', poster: HOLIDAY_POSTERS[2], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } },
+            { id: '4', title: 'Una Poltrona per Due', type: 'Film', genre: 'Classico Natalizio', poster: HOLIDAY_POSTERS[3], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } },
+            { id: '5', title: 'Klaus - I segreti del Natale', type: 'Film', genre: 'Animazione', poster: HOLIDAY_POSTERS[4], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } },
+            { id: '6', title: 'Polar Express', type: 'Film', genre: 'Avventura / Fantasia', poster: HOLIDAY_POSTERS[5], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } },
+            { id: '7', title: 'Nightmare Before Christmas', type: 'Film', genre: 'Animazione', poster: HOLIDAY_POSTERS[6], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } },
+            { id: '8', title: 'Dash & Lily', type: 'Serie TV', genre: 'Romantico Invernale', poster: HOLIDAY_POSTERS[1], proposedCount: 0, watched: false, ratings: { Alessio: 0, Giada: 0 } }
+        ];
+
+        // Stato dell'App
+        let currentUser = 'Alessio';
+        let movies = [];
+        let currentProposals = [];
+        let cardVotes = {}; // Esempio: { movieId: { Alessio: true/false, Giada: true/false } }
+        let selectedMatchedMovieId = null;
+
+        // Inizializzazione al caricamento della pagina
+        window.onload = function() {
+            initSnowEffect();
+            loadState();
+            updateDateAndCountdown();
+            generateProposals();
+            renderAll();
+            startEasterEggTimer();
+        };
+
+        // --- GESTIONE LOCAL STORAGE ---
+        function loadState() {
+            const savedMovies = localStorage.getItem('xmas_movies_db');
+            if (savedMovies) {
+                movies = JSON.parse(savedMovies);
+            } else {
+                movies = [...DEFAULT_MOVIES];
+                saveState();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('xmas_movies_db', JSON.stringify(movies));
+        }
+
+        // --- GESTIONE UTENTE E TAB ---
+        function switchUser(userName) {
+            currentUser = userName;
+            const btnAlessio = document.getElementById('btn-user-alessio');
+            const btnGiada = document.getElementById('btn-user-giada');
+
+            if (userName === 'Alessio') {
+                btnAlessio.className = 'px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 bg-xmasRed text-white shadow-md';
+                btnGiada.className = 'px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 text-slate-300 hover:text-white';
+            } else {
+                btnGiada.className = 'px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 bg-emerald-600 text-white shadow-md';
+                btnAlessio.className = 'px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 text-slate-300 hover:text-white';
+            }
+            renderProposalsDeck();
+        }
+
+        function switchTab(tabName) {
+            const tabs = ['proposte', 'visti', 'libreria', 'analytics'];
+            tabs.forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = 'tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-white/5';
+            });
+
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.className = 'tab-btn active-tab px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 bg-xmasGreen text-white shadow-lg';
+            
+            renderAll();
+        }
+
+        // --- CALENDARIO E COUNTDOWN ---
+        function updateDateAndCountdown() {
+            const now = new Date();
+            const months = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC'];
+            const days = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+
+            document.getElementById('cal-month').innerText = months[now.getMonth()];
+            document.getElementById('cal-day').innerText = String(now.getDate()).padStart(2, '0');
+            document.getElementById('cal-full-date').innerText = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+
+            // Calcolo giorni a Natale (25 Dicembre)
+            let xmasDate = new Date(now.getFullYear(), 11, 25);
+            if (now > xmasDate) {
+                xmasDate = new Date(now.getFullYear() + 1, 11, 25);
+            }
+            const diffTime = Math.abs(xmasDate - now);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('days-to-xmas').innerText = diffDays;
+        }
+
+        // --- GENERAZIONE 4 PROPOSTE CASUALI ---
+        function generateProposals() {
+            const availableMovies = movies.filter(m => !m.watched);
+            
+            if (availableMovies.length === 0) {
+                currentProposals = [];
+                renderProposalsDeck();
+                return;
+            }
+
+            // Shuffle semplice
+            const shuffled = [...availableMovies].sort(() => 0.5 - Math.random());
+            currentProposals = shuffled.slice(0, 4);
+
+            // Incrementa conteggio analytics per i film proposti
+            currentProposals.forEach(p => {
+                const target = movies.find(m => m.id === p.id);
+                if (target) {
+                    target.proposedCount = (target.proposedCount || 0) + 1;
+                }
+            });
+            saveState();
+
+            // Reset voti per il nuovo deck
+            cardVotes = {};
+            currentProposals.forEach(p => {
+                cardVotes[p.id] = { Alessio: null, Giada: null };
+            });
+
+            renderProposalsDeck();
+        }
+
+        // --- RENDERING CARD DECK (PROPOSTE) ---
+        function renderProposalsDeck() {
+            const container = document.getElementById('deck-container');
+            container.innerHTML = '';
+
+            if (currentProposals.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 glass-card rounded-3xl">
+                        <span class="text-5xl">🎄</span>
+                        <h4 class="font-serif text-xl font-bold text-amber-200 mt-2">Nessun film disponibile per la proposta!</h4>
+                        <p class="text-sm text-slate-400 mt-1">Tutti i film inseriti sono stati già visti o la libreria è vuota. Aggiungine altri dalla sezione Libreria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentProposals.forEach(movie => {
+                const votes = cardVotes[movie.id] || { Alessio: null, Giada: null };
+
+                // Stato Semafori Fiocco di Neve
+                // null = neutral/slate, true = green, false = red
+                const getSnowflakeStyle = (vote) => {
+                    if (vote === true) return 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] scale-110';
+                    if (vote === false) return 'text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]';
+                    return 'text-slate-600';
+                };
+
+                const cardHtml = `
+                    <div class="glass-card rounded-3xl overflow-hidden flex flex-col justify-between border border-white/10 hover:border-amber-500/40 transition-all duration-300 shadow-xl group">
+                        
+                        <!-- Immagine di Copertina -->
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="${movie.poster}" alt="${movie.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                            
+                            <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-amber-300 text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-full border border-amber-500/30">
+                                ${movie.type}
+                            </span>
+
+                            <span class="absolute top-3 right-3 bg-xmasRed/80 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                ❄️ ${movie.genre}
+                            </span>
+                        </div>
+
+                        <!-- Titolo e Contenuto -->
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-serif text-lg font-bold text-white line-clamp-2 leading-tight">${movie.title}</h4>
+                            </div>
+
+                            <!-- Indicatori Semaforo Fiocco di Neve -->
+                            <div class="my-4 bg-slate-900/80 p-3 rounded-2xl border border-white/5 flex items-center justify-around">
+                                <!-- Semaforo Alessio -->
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase mb-1">Alessio</span>
+                                    <i class="fa-solid fa-snowflake text-2xl transition-all duration-300 ${getSnowflakeStyle(votes.Alessio)}"></i>
+                                </div>
+                                <div class="h-6 w-px bg-white/10"></div>
+                                <!-- Semaforo Giada -->
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase mb-1">Giada</span>
+                                    <i class="fa-solid fa-snowflake text-2xl transition-all duration-300 ${getSnowflakeStyle(votes.Giada)}"></i>
+                                </div>
+                            </div>
+
+                            <!-- Pulsanti Votazione (In base al profilo attivo) -->
+                            <div class="space-y-2">
+                                <div class="text-xs text-center text-amber-300/90 font-medium">
+                                    Vota come <strong class="underline">${currentUser}</strong>:
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="voteMovie('${movie.id}', true)" 
+                                        class="py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${votes[currentUser] === true ? 'bg-emerald-600 text-white ring-2 ring-emerald-300' : 'bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/30'}">
+                                        <i class="fa-solid fa-thumbs-up"></i> Lo vediamo
+                                    </button>
+                                    <button onclick="voteMovie('${movie.id}', false)" 
+                                        class="py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${votes[currentUser] === false ? 'bg-rose-700 text-white ring-2 ring-rose-400' : 'bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/30'}">
+                                        <i class="fa-solid fa-thumbs-down"></i> Non lo vediamo
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // --- GESTIONE VOTAZIONE CARD ---
+        function voteMovie(movieId, choice) {
+            if (!cardVotes[movieId]) {
+                cardVotes[movieId] = { Alessio: null, Giada: null };
+            }
+
+            cardVotes[movieId][currentUser] = choice;
+            renderProposalsDeck();
+
+            // Verfica Match: entrambi "Lo vediamo" (true)
+            const votes = cardVotes[movieId];
+            if (votes.Alessio === true && votes.Giada === true) {
+                triggerGiftMatchModal(movieId);
+            }
+        }
+
+        // --- MODALE MATCH & ESPLOSIONE REGALO ---
+        function triggerGiftMatchModal(movieId) {
+            selectedMatchedMovieId = movieId;
+            const movie = movies.find(m => m.id === movieId);
+            if (!movie) return;
+
+            document.getElementById('modal-movie-title').innerText = movie.title;
+            document.getElementById('modal-movie-type').innerText = movie.type;
+            document.getElementById('modal-movie-genre').innerText = movie.genre;
+
+            const modal = document.getElementById('modal-match');
+            const giftIcon = document.getElementById('gift-icon');
+            
+            modal.classList.remove('hidden');
+            giftIcon.classList.add('animate-gift-open');
+
+            // Effetto Confetti Natalizi
+            confetti({
+                particleCount: 120,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#C41E3A', '#165B33', '#FFD700', '#FFFFFF']
+            });
+        }
+
+        function closeMatchModal() {
+            document.getElementById('modal-match').classList.add('hidden');
+            document.getElementById('gift-icon').classList.remove('animate-gift-open');
+        }
+
+        function confirmWatchedMovie() {
+            if (!selectedMatchedMovieId) return;
+
+            const movie = movies.find(m => m.id === selectedMatchedMovieId);
+            if (movie) {
+                movie.watched = true;
+                saveState();
+            }
+
+            closeMatchModal();
+            // Rigenera proposte senza il film confermato
+            generateProposals();
+            renderAll();
+        }
+
+        // --- RENDERING SEZIONE FILM VISTI & VOTAZIONI PUPAZZO DI NEVE ---
+        function renderWatchedSection() {
+            const container = document.getElementById('watched-list-container');
+            const watchedMovies = movies.filter(m => m.watched);
+            document.getElementById('count-watched').innerText = watchedMovies.length;
+
+            container.innerHTML = '';
+
+            if (watchedMovies.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 glass-card rounded-3xl">
+                        <span class="text-5xl">⛄</span>
+                        <h4 class="font-serif text-xl font-bold text-slate-300 mt-2">Nessun film confermato ancora!</h4>
+                        <p class="text-sm text-slate-400 mt-1">Quando entrambi sceglierete lo stesso film, apparirà qui per essere valutato.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            watchedMovies.forEach(movie => {
+                const rAlessio = movie.ratings?.Alessio || 0;
+                const rGiada = movie.ratings?.Giada || 0;
+                
+                // Calcolo Media Voti
+                let avg = 0;
+                if (rAlessio > 0 && rGiada > 0) avg = ((rAlessio + rGiada) / 2).toFixed(1);
+                else if (rAlessio > 0) avg = rAlessio.toFixed(1);
+                else if (rGiada > 0) avg = rGiada.toFixed(1);
+
+                const cardHtml = `
+                    <div class="glass-card rounded-3xl p-5 border border-emerald-500/20 flex flex-col justify-between space-y-4">
+                        <div class="flex items-start gap-4">
+                            <img src="${movie.poster}" class="w-20 h-24 object-cover rounded-2xl shadow-md border border-white/10">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">${movie.type}</span>
+                                <h4 class="font-serif text-lg font-bold text-white leading-snug">${movie.title}</h4>
+                                <p class="text-xs text-slate-400 mt-1">Media Voti: <span class="text-amber-300 font-bold">${avg > 0 ? avg + ' ☃️' : 'Non ancora valutato'}</span></p>
+                            </div>
+                        </div>
+
+                        <!-- Votazioni 별 Pupazzi di Neve -->
+                        <div class="bg-slate-900/80 p-3 rounded-2xl space-y-2 border border-white/5">
+                            
+                            <!-- Voto Alessio -->
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-semibold text-slate-300">👨‍🦱 Alessio:</span>
+                                <div class="flex gap-1 text-base">
+                                    ${[1, 2, 3, 4, 5].map(star => `
+                                        <button onclick="rateMovie('${movie.id}', 'Alessio', ${star})" class="transition-transform hover:scale-125 focus:outline-none">
+                                            ${star <= rAlessio ? '☃️' : '<span class="opacity-30">⛄</span>'}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Voto Giada -->
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-semibold text-slate-300">👩‍🦰 Giada:</span>
+                                <div class="flex gap-1 text-base">
+                                    ${[1, 2, 3, 4, 5].map(star => `
+                                        <button onclick="rateMovie('${movie.id}', 'Giada', ${star})" class="transition-transform hover:scale-125 focus:outline-none">
+                                            ${star <= rGiada ? '☃️' : '<span class="opacity-30">⛄</span>'}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function rateMovie(movieId, user, rating) {
+            const movie = movies.find(m => m.id === movieId);
+            if (movie) {
+                if (!movie.ratings) movie.ratings = { Alessio: 0, Giada: 0 };
+                movie.ratings[user] = rating;
+                saveState();
+                renderWatchedSection();
+            }
+        }
+
+        // --- GESTIONE LIBRERIA ---
+        function renderLibrarySection() {
+            const container = document.getElementById('full-library-container');
+            document.getElementById('total-library-count').innerText = movies.length;
+
+            container.innerHTML = '';
+
+            movies.forEach(movie => {
+                const itemHtml = `
+                    <div class="bg-slate-900/80 p-3 rounded-2xl border border-white/10 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <span class="text-xl">${movie.type === 'Serie TV' ? '📺' : '🎬'}</span>
+                            <div class="truncate">
+                                <h5 class="font-bold text-sm text-white truncate">${movie.title}</h5>
+                                <span class="text-[10px] text-slate-400 block">${movie.genre} ${movie.watched ? '• <strong class="text-emerald-400">Visto</strong>' : ''}</span>
+                            </div>
+                        </div>
+                        <button onclick="removeMovie('${movie.id}')" title="Rimuovi film" class="text-slate-500 hover:text-rose-400 p-2 transition-colors">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+        }
+
+        function handleAddMovie(event) {
+            event.preventDefault();
+            const titleInput = document.getElementById('new-title');
+            const typeInput = document.getElementById('new-type');
+            const genreInput = document.getElementById('new-genre');
+
+            const randomPoster = HOLIDAY_POSTERS[Math.floor(Math.random() * HOLIDAY_POSTERS.length)];
+
+            const newMovie = {
+                id: Date.now().toString(),
+                title: titleInput.value.trim(),
+                type: typeInput.value,
+                genre: genreInput.value,
+                poster: randomPoster,
+                proposedCount: 0,
+                watched: false,
+                ratings: { Alessio: 0, Giada: 0 }
+            };
+
+            movies.push(newMovie);
+            saveState();
+
+            titleInput.value = '';
+            renderLibrarySection();
+            renderAnalyticsSection();
+        }
+
+        function removeMovie(movieId) {
+            movies = movies.filter(m => m.id !== movieId);
+            saveState();
+            generateProposals();
+            renderAll();
+        }
+
+        // --- RENDERING ANALYTICS ---
+        function renderAnalyticsSection() {
+            document.getElementById('stat-total-movies').innerText = movies.length;
+            document.getElementById('stat-watched-movies').innerText = movies.filter(m => m.watched).length;
+
+            // Trova il film più proposto
+            let topMovie = '-';
+            let maxProposed = 0;
+            movies.forEach(m => {
+                if (m.proposedCount > maxProposed) {
+                    maxProposed = m.proposedCount;
+                    topMovie = `${m.title} (${m.proposedCount} volte)`;
+                }
+            });
+            document.getElementById('stat-top-proposed').innerText = topMovie;
+
+            // Popola Tabella
+            const tbody = document.getElementById('analytics-table-body');
+            tbody.innerHTML = '';
+
+            const sorted = [...movies].sort((a, b) => b.proposedCount - a.proposedCount);
+
+            sorted.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-white">${m.title}</td>
+                    <td class="py-3 px-4 text-xs text-slate-400">${m.type}</td>
+                    <td class="py-3 px-4 text-center font-bold text-amber-300">${m.proposedCount || 0}</td>
+                    <td class="py-3 px-4 text-center">
+                        ${m.watched ? '<span class="text-xs bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Visto</span>' : '<span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">In Libreria</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderAll() {
+            renderProposalsDeck();
+            renderWatchedSection();
+            renderLibrarySection();
+            renderAnalyticsSection();
+        }
+
+        // --- EFFETTO NEVE CADENTE (CANVAS) ---
+        function initSnowEffect() {
+            const canvas = document.getElementById('snow-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const numFlakes = 60;
+            const flakes = [];
+
+            for (let i = 0; i < numFlakes; i++) {
+                flakes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 3 + 1,
+                    d: Math.random() * 1 + 0.5,
+                    opacity: Math.random() * 0.7 + 0.3
+                });
+            }
+
+            function drawFlakes() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                for (let i = 0; i < numFlakes; i++) {
+                    const f = flakes[i];
+                    ctx.moveTo(f.x, f.y);
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+                }
+                ctx.fill();
+                moveFlakes();
+            }
+
+            let angle = 0;
+            function moveFlakes() {
+                angle += 0.01;
+                for (let i = 0; i < numFlakes; i++) {
+                    const f = flakes[i];
+                    f.y += Math.cos(angle + f.d) + 1 + f.r / 2;
+                    f.x += Math.sin(angle) * 1;
+
+                    if (f.y > height) {
+                        flakes[i] = { x: Math.random() * width, y: 0, r: f.r, d: f.d, opacity: f.opacity };
+                    }
+                }
+            }
+
+            setInterval(drawFlakes, 33);
+        }
+
+        // --- EASTER EGG TIMER (BABBO NATALE & GRINCH) ---
+        function startEasterEggTimer() {
+            const characters = [
+                { icon: '🎅', msg: '"Ho Ho Ho! Serata cinema perfetta!"' },
+                { icon: '🟢', msg: '"Il Grinch dice: Stasera niente film noiosi!"' },
+                { icon: '⛄', msg: '"Avete preparato la cioccolata calda?"' }
+            ];
+
+            setInterval(() => {
+                const egg = characters[Math.floor(Math.random() * characters.length)];
+                const container = document.getElementById('easter-egg-container');
+                
+                document.getElementById('easter-egg-icon').innerText = egg.icon;
+                document.getElementById('easter-egg-msg').innerText = egg.msg;
+
+                container.classList.remove('hidden');
+                container.classList.add('easter-egg-float');
+
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                    container.classList.remove('easter-egg-float');
+                }, 12000);
+
+            }, 25000); // Compare ogni 25 secondi circa
+        }
+    </script>
+</body>
+</html>
