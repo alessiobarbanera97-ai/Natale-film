@@ -1,0 +1,38 @@
+const CACHE = 'film-sotto-albero-v2';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com' || (url.hostname === 'www.gstatic.com' && url.pathname.indexOf('/firebasejs/') === 0);
+  const sameOrigin = url.origin === self.location.origin;
+  if (!isFont && !sameOrigin) return;
+
+  // Pagina e file dell'app: prima dalla cache, poi aggiorna in background.
+  // Font: stessa strategia, così dopo la prima visita funzionano anche offline.
+  e.respondWith(
+    caches.match(req, { ignoreSearch: true }).then((hit) => {
+      const net = fetch(req).then((res) => {
+        if (res && (res.ok || res.type === 'opaque')) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+        }
+        return res;
+      }).catch(() => hit);
+      return hit || net;
+    })
+  );
+});
