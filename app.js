@@ -1,3 +1,4 @@
+alert("TEST CHRISTMAS APP");
 const $=s=>document.querySelector(s);
 const defaultState={round:1,lastDraw:"",films:[
 {id:"f1",name:"Klaus",type:"Film",genre:"Animazione · Natale"},{id:"f2",name:"The Grinch",type:"Film",genre:"Commedia · Natale"},{id:"f3",name:"Harry Potter e la pietra filosofale",type:"Film",genre:"Fantasy · Magia"},{id:"f4",name:"Le cronache di Natale",type:"Film",genre:"Avventura · Natale"},{id:"f5",name:"Elf",type:"Film",genre:"Commedia · Natale"},{id:"f6",name:"Polar Express",type:"Film",genre:"Animazione · Natale"},{id:"f7",name:"Mamma, ho perso l'aereo",type:"Film",genre:"Commedia"},{id:"f8",name:"The Holiday",type:"Film",genre:"Romantico · Natale"},{id:"f9",name:"Mercoledì",type:"Serie TV",genre:"Fantasy · Mistero"},{id:"f10",name:"Stranger Things",type:"Serie TV",genre:"Fantascienza · Thriller"}],proposals:[],votes:{},counts:{},pending:[],watched:[],history:[]};
